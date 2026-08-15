@@ -6,6 +6,11 @@ export default defineConfig({
     server: {
       port: 3000,
       host: '0.0.0.0',
+      watch: {
+        // Keep the watcher count low in sandboxed environments: ignore the
+        // pnpm store and node_modules which contain tens of thousands of files.
+        ignored: ['**/.pnpm-store/**', '**/node_modules/**'],
+      },
     },
     base: './',
     plugins: [react()],

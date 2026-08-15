@@ -14,6 +14,7 @@ export interface SettingsState {
   guidanceScale: number;
   autoTranslate: boolean;
   enableHD: boolean;
+  autoGenerate: boolean;
 
   setLanguage: (lang: Language) => void;
   setProvider: (provider: ProviderOption) => void;
@@ -24,6 +25,7 @@ export interface SettingsState {
   setGuidanceScale: (scale: number) => void;
   setAutoTranslate: (enabled: boolean) => void;
   setEnableHD: (enabled: boolean) => void;
+  setAutoGenerate: (enabled: boolean) => void;
   resetImagineParams: () => void;
 }
 
@@ -42,6 +44,7 @@ export const useSettingsStore = create<SettingsState>()(
       guidanceScale: 3.5,
       autoTranslate: false,
       enableHD: false,
+      autoGenerate: false,
 
       setLanguage: (language) => set({ language }),
       setProvider: (provider) => set({ provider }),
@@ -52,6 +55,7 @@ export const useSettingsStore = create<SettingsState>()(
       setGuidanceScale: (guidanceScale) => set({ guidanceScale }),
       setAutoTranslate: (autoTranslate) => set({ autoTranslate }),
       setEnableHD: (enableHD) => set({ enableHD }),
+      setAutoGenerate: (autoGenerate) => set({ autoGenerate }),
 
       resetImagineParams: () =>
         set({

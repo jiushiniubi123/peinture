@@ -111,6 +111,9 @@ export const useCreationGeneration = () => {
   // --- Image Generation ---
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
+    // Guard against concurrent runs (e.g. triggered by the auto-generate timer
+    // while a previous generation is still in progress).
+    if (useUIStore.getState().isLoading) return;
     addToPromptHistory(prompt);
     setIsLoading(true);
     setImageDimensions(null);
