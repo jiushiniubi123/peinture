@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { useCallback, useEffect, useRef } from "react";
 import { useSettingsStore } from "../store/settingsStore";
 import {
   useUIStore,
@@ -92,6 +93,10 @@ export const useCreationGeneration = () => {
     setIsLiveMode,
     imageDimensions,
     setImageDimensions,
+    isAutoSend,
+    setIsAutoSend,
+    nextAutoSendIn,
+    setNextAutoSendIn,
   } = useUIStore();
 
   const openaiUseImagenMode = useConfigStore(
@@ -303,6 +308,69 @@ export const useCreationGeneration = () => {
       setIsLoading(false);
     }
   };
+
+  // --- Auto Send (random 35s-45s interval) ---
+  // Keep a ref to the latest handleGenerate so the scheduled callback
+  // always triggers the current generation logic.
+  const handleGenerateRef = useRef(handleGenerate);
+  useEffect(() => {
+    handleGenerateRef.current = handleGenerate;
+  }, [handleGenerate]);
+
+  const autoSendTimerRef = useRef<number | null>(null);
+
+  const toggleAutoSend = useCallback(() => {
+    const next = !isAutoSend;
+    setIsAutoSend(next);
+    if (!next) {
+      if (autoSendTimerRef.current) {
+        window.clearTimeout(autoSendTimerRef.current);
+        autoSendTimerRef.current = null;
+      }
+      setNextAutoSendIn(null);
+    }
+  }, [isAutoSend, setIsAutoSend, setNextAutoSendIn]);
+
+  // Schedule the next auto-send with a random delay between 35 and 45 seconds.
+  useEffect(() => {
+    if (!isAutoSend) return;
+
+    const scheduleNext = () => {
+      const delayMs = 35000 + Math.floor(Math.random() * 11000); // 35s ~ 45s
+      setNextAutoSendIn(Math.round(delayMs / 1000));
+      autoSendTimerRef.current = window.setTimeout(() => {
+        const state = useUIStore.getState();
+        // Skip if a generation/translation is already running or prompt is empty.
+        if (
+          !state.isLoading &&
+          !state.isTranslating &&
+          state.prompt.trim()
+        ) {
+          handleGenerateRef.current();
+        }
+        scheduleNext();
+      }, delayMs);
+    };
+
+    scheduleNext();
+    return () => {
+      if (autoSendTimerRef.current) {
+        window.clearTimeout(autoSendTimerRef.current);
+        autoSendTimerRef.current = null;
+      }
+    };
+  }, [isAutoSend, setNextAutoSendIn]);
+
+  // Live countdown display for the next auto-send.
+  useEffect(() => {
+    if (!isAutoSend) return;
+    const interval = window.setInterval(() => {
+      setNextAutoSendIn((prev) =>
+        prev !== null && prev > 0 ? prev - 1 : prev,
+      );
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [isAutoSend, setNextAutoSendIn]);
 
   // --- Prompt Optimization ---
   const handleOptimizePrompt = async () => {
@@ -628,5 +696,8 @@ export const useCreationGeneration = () => {
     handleOptimizePrompt,
     handleLiveClick,
     handleReset,
+    isAutoSend,
+    nextAutoSendIn,
+    toggleAutoSend,
   };
 };

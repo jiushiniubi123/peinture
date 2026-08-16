@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Sparkles, Loader2, RotateCcw } from "lucide-react";
+import { Sparkles, Loader2, RotateCcw, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import { PromptInput } from "../components/PromptInput";
 import { ControlPanel } from "../components/ControlPanel";
@@ -39,6 +39,9 @@ export const CreationView: React.FC = () => {
     handleOptimizePrompt,
     handleLiveClick,
     handleReset,
+    isAutoSend,
+    nextAutoSendIn,
+    toggleAutoSend,
   } = useCreationGeneration();
 
   const {
@@ -125,6 +128,35 @@ export const CreationView: React.FC = () => {
                 </button>
               </Tooltip>
             )}
+          </div>
+
+          {/* Auto Send Toggle */}
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-white/5 border border-white/10 px-3 py-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <Repeat
+                className={`w-4 h-4 flex-shrink-0 ${isAutoSend ? "text-purple-400" : "text-white/40"}`}
+              />
+              <span className="text-sm font-medium text-white/80 truncate">
+                {t.autoSend}
+              </span>
+              {isAutoSend && nextAutoSendIn !== null && (
+                <span className="flex-shrink-0 font-mono text-xs text-purple-300 bg-purple-500/10 border border-purple-500/30 rounded-md px-1.5 py-0.5">
+                  {nextAutoSendIn}s
+                </span>
+              )}
+            </div>
+            <Tooltip content={t.autoSendHint}>
+              <button
+                onClick={toggleAutoSend}
+                role="switch"
+                aria-checked={isAutoSend}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${isAutoSend ? "bg-purple-600" : "bg-white/10"}`}
+              >
+                <span
+                  className={`${isAutoSend ? "translate-x-6" : "translate-x-1"} inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform`}
+                />
+              </button>
+            </Tooltip>
           </div>
         </div>
       </aside>

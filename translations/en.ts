@@ -18,6 +18,8 @@ export const en = {
   seedPlaceholder: "Random",
   generate: "Generate Image",
   dreaming: "Dreaming...",
+  autoSend: "Auto Send",
+  autoSendHint: "Auto-send every 35-45 seconds and open the result",
   galleryEmptyTitle: "Creations Appear Here",
   galleryEmptyDesc: "Describe your vision and watch it come to life using AI.",
   generationFailed: "Generation Failed",

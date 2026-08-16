@@ -18,6 +18,8 @@ export const zh = {
   seedPlaceholder: "随机",
   generate: "生成图片",
   dreaming: "生成中...",
+  autoSend: "自动发送",
+  autoSendHint: "每 35-45 秒随机自动发送一次并打开结果",
   galleryEmptyTitle: "作品将显示在这里",
   galleryEmptyDesc: "描述您的构想，用 AI 将其变为现实。",
   generationFailed: "生成失败",
