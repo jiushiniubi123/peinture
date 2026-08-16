@@ -80,6 +80,9 @@ export const zh = {
   liveGenerating: "视频生成中...",
   liveGeneratingDesc: "生成视频描述中...",
   liveError: "视频生成失败",
+  autoSend: "自动发送",
+  autoSendOn: "自动发送已开启（每 100~120 秒随机触发一次）",
+  autoSendOff: "自动发送已关闭（开启后将每 100~120 秒随机生成一次）",
   
   // Service Mode
   service_mode: "服务模式",

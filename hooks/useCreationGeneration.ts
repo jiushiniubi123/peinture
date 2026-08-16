@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { useEffect, useRef } from "react";
 import { useSettingsStore } from "../store/settingsStore";
 import {
   useUIStore,
@@ -303,6 +304,40 @@ export const useCreationGeneration = () => {
       setIsLoading(false);
     }
   };
+
+  // --- Auto-Send Timer ---
+  // Randomly triggers generation every 100~120 seconds while enabled.
+  const isAutoSend = useUIStore((s) => s.isAutoSend);
+  const generateRef = useRef(handleGenerate);
+  useEffect(() => {
+    generateRef.current = handleGenerate;
+  });
+
+  useEffect(() => {
+    if (!isAutoSend) return;
+    let timerId: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      const delay = 100_000 + Math.random() * 20_000; // 100s ~ 120s
+      timerId = setTimeout(async () => {
+        const { isLoading: busy, isTranslating: translating } =
+          useUIStore.getState();
+        // Skip (and reschedule) if a generation/translation is already running.
+        if (busy || translating) {
+          schedule();
+          return;
+        }
+        try {
+          await generateRef.current();
+        } catch (err) {
+          console.error("Auto-send generation failed", err);
+        } finally {
+          schedule();
+        }
+      }, delay);
+    };
+    schedule();
+    return () => clearTimeout(timerId);
+  }, [isAutoSend]);
 
   // --- Prompt Optimization ---
   const handleOptimizePrompt = async () => {

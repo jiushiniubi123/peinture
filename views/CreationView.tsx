@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Sparkles, Loader2, RotateCcw } from "lucide-react";
+import { Sparkles, Loader2, RotateCcw, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { PromptInput } from "../components/PromptInput";
 import { ControlPanel } from "../components/ControlPanel";
@@ -25,6 +25,8 @@ export const CreationView: React.FC = () => {
     isDownloading,
     isLiveMode,
     setIsLiveMode,
+    isAutoSend,
+    setIsAutoSend,
     imageDimensions,
     setImageDimensions,
   } = useUIStore();
@@ -97,6 +99,25 @@ export const CreationView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <Tooltip
+              content={isAutoSend ? t.autoSendOn : t.autoSendOff}
+            >
+              <button
+                type="button"
+                onClick={() => setIsAutoSend(!isAutoSend)}
+                disabled={isWorking || !prompt.trim() || isTranslating}
+                aria-pressed={isAutoSend}
+                className={`flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl border transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isAutoSend
+                    ? "bg-purple-600 border-purple-500 text-white shadow-purple-900/40 hover:bg-purple-500"
+                    : "bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/20"
+                }`}
+              >
+                {isAutoSend && <span className="absolute flex h-3 w-3 -top-1 -right-1"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"/><span className="relative inline-flex rounded-full h-3 w-3 bg-purple-500"/></span>}
+                <Zap className="w-5 h-5" />
+              </button>
+            </Tooltip>
+
             <button
               onClick={handleGenerate}
               disabled={isWorking || !prompt.trim() || isTranslating}

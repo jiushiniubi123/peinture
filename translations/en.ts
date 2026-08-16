@@ -80,6 +80,9 @@ export const en = {
   liveGenerating: "Generating Video...",
   liveGeneratingDesc: "Generating Video Description...",
   liveError: "Video Generation Failed",
+  autoSend: "Auto Send",
+  autoSendOn: "Auto Send enabled (triggers randomly every 100~120s)",
+  autoSendOff: "Auto Send disabled (enable to generate randomly every 100~120s)",
 
   // Service Mode
   service_mode: "Service Mode",

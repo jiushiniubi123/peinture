@@ -17,6 +17,7 @@ export interface UIState {
   imageDimensions: { width: number; height: number } | null;
   isLiveMode: boolean;
   isOpfsHydrated: boolean;
+  isAutoSend: boolean;
 
   setCurrentView: (view: AppView) => void;
   setPrompt: (prompt: string) => void;
@@ -32,6 +33,7 @@ export interface UIState {
   ) => void;
   setIsLiveMode: (isLive: boolean) => void;
   setIsOpfsHydrated: (isHydrated: boolean) => void;
+  setIsAutoSend: (isAutoSend: boolean) => void;
 }
 
 export const useUIStore = create<UIState>()((set) => ({
@@ -47,6 +49,7 @@ export const useUIStore = create<UIState>()((set) => ({
   imageDimensions: null,
   isLiveMode: false,
   isOpfsHydrated: false,
+  isAutoSend: false,
 
   setCurrentView: (currentView) => set({ currentView }),
   setPrompt: (prompt) => set({ prompt }),
@@ -60,6 +63,7 @@ export const useUIStore = create<UIState>()((set) => ({
   setImageDimensions: (imageDimensions) => set({ imageDimensions }),
   setIsLiveMode: (isLiveMode) => set({ isLiveMode }),
   setIsOpfsHydrated: (isOpfsHydrated) => set({ isOpfsHydrated }),
+  setIsAutoSend: (isAutoSend) => set({ isAutoSend }),
 }));
 
 /**
