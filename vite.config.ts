@@ -6,6 +6,10 @@ export default defineConfig({
     server: {
       port: 3000,
       host: '0.0.0.0',
+      watch: {
+        // Ignore pnpm store to avoid hitting the system file-watcher limit (ENOSPC)
+        ignored: ['**/.pnpm-store/**', '**/node_modules/**'],
+      },
     },
     base: './',
     plugins: [react()],
