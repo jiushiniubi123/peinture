@@ -514,6 +514,14 @@ let opfsDirsInitPromise: Promise<void> | null = null;
 export const initOpfsDirs = (): Promise<void> => {
   if (opfsDirsInitPromise) return opfsDirsInitPromise;
 
+  // OPFS requires a secure context (HTTPS or localhost). In insecure / sandboxed
+  // environments navigator.storage is unavailable — degrade silently instead of
+  // logging an error on every app start.
+  if (typeof navigator === "undefined" || !navigator.storage) {
+    opfsDirsInitPromise = Promise.resolve();
+    return opfsDirsInitPromise;
+  }
+
   opfsDirsInitPromise = (async () => {
     try {
       await dir(OPFS_TMP_DIR).create();
@@ -529,6 +537,8 @@ export const initOpfsDirs = (): Promise<void> => {
 
 // Cleanup OPFS tmp files older than 24 hours
 export const cleanupOldTempFiles = async () => {
+  // OPFS requires a secure context; silently skip when unavailable
+  if (typeof navigator === "undefined" || !navigator.storage) return;
   try {
     const root = await navigator.storage.getDirectory();
     let tmpHandle;
