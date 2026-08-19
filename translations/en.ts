@@ -18,6 +18,8 @@ export const en = {
   seedPlaceholder: "Random",
   generate: "Generate Image",
   dreaming: "Dreaming...",
+  autoRefreshOn: "Auto-generate every {n}s — click to stop",
+  autoRefreshOff: "Auto-generate disabled — click to enable",
   galleryEmptyTitle: "Creations Appear Here",
   galleryEmptyDesc: "Describe your vision and watch it come to life using AI.",
   generationFailed: "Generation Failed",

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useSettingsStore } from "../store/settingsStore";
 import {
@@ -303,6 +304,32 @@ export const useCreationGeneration = () => {
       setIsLoading(false);
     }
   };
+
+  // --- Auto Refresh (re-trigger generate button every N seconds) ---
+  const autoRefreshEnabled = useSettingsStore(
+    (s) => s.autoRefreshEnabled,
+  );
+  const autoRefreshInterval = useSettingsStore(
+    (s) => s.autoRefreshInterval,
+  );
+
+  // Keep the latest handler in a ref so the timer never calls a stale closure.
+  const generateRef = useRef(handleGenerate);
+  useEffect(() => {
+    generateRef.current = handleGenerate;
+  });
+
+  useEffect(() => {
+    if (!autoRefreshEnabled) return;
+    const timer = setInterval(() => {
+      const { prompt: currentPrompt, isLoading, isTranslating } =
+        useUIStore.getState();
+      // Skip if there's no prompt or a generation/translation is already running.
+      if (!currentPrompt.trim() || isLoading || isTranslating) return;
+      generateRef.current();
+    }, Math.max(10, autoRefreshInterval) * 1000);
+    return () => clearInterval(timer);
+  }, [autoRefreshEnabled, autoRefreshInterval]);
 
   // --- Prompt Optimization ---
   const handleOptimizePrompt = async () => {

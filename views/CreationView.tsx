@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from "react";
-import { Sparkles, Loader2, RotateCcw } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Sparkles, Loader2, RotateCcw, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { PromptInput } from "../components/PromptInput";
 import { ControlPanel } from "../components/ControlPanel";
@@ -15,7 +15,13 @@ import { useCreationGeneration } from "../hooks/useCreationGeneration";
 import { useImageActions } from "../hooks/useImageActions";
 
 export const CreationView: React.FC = () => {
-  const { language, provider } = useSettingsStore();
+  const {
+    language,
+    provider,
+    autoRefreshEnabled,
+    autoRefreshInterval,
+    setAutoRefreshEnabled,
+  } = useSettingsStore();
   const { cloudHistory } = useDataStore();
   const {
     prompt,
@@ -32,6 +38,21 @@ export const CreationView: React.FC = () => {
   const currentImage = useCurrentImage();
 
   const t = translations[language];
+
+  // Auto-refresh countdown (seconds until the next automatic generation)
+  const [refreshCountdown, setRefreshCountdown] = useState(autoRefreshInterval);
+
+  useEffect(() => {
+    if (!autoRefreshEnabled) {
+      setRefreshCountdown(autoRefreshInterval);
+      return;
+    }
+    setRefreshCountdown(autoRefreshInterval);
+    const interval = setInterval(() => {
+      setRefreshCountdown((s) => (s <= 1 ? autoRefreshInterval : s - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [autoRefreshEnabled, autoRefreshInterval]);
 
   // Business logic hooks
   const {
@@ -114,6 +135,43 @@ export const CreationView: React.FC = () => {
                 </span>
               )}
             </button>
+
+            <Tooltip
+              content={
+                autoRefreshEnabled
+                  ? t.autoRefreshOn.replace(
+                      "{n}",
+                      String(autoRefreshInterval),
+                    )
+                  : t.autoRefreshOff
+              }
+            >
+              <button
+                onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                aria-pressed={autoRefreshEnabled}
+                aria-label={
+                  autoRefreshEnabled ? t.autoRefreshOn : t.autoRefreshOff
+                }
+                className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-xl border transition-all shadow-lg active:scale-95 ${
+                  autoRefreshEnabled
+                    ? "bg-purple-600/20 border-purple-500/40 text-purple-300 hover:bg-purple-600/30"
+                    : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10 hover:border-white/20"
+                }`}
+              >
+                <RefreshCw
+                  className={`w-4 h-4 ${
+                    autoRefreshEnabled
+                      ? "animate-spin [animation-duration:4s]"
+                      : ""
+                  }`}
+                />
+                {autoRefreshEnabled && (
+                  <span className="text-[9px] font-mono leading-none">
+                    {refreshCountdown}s
+                  </span>
+                )}
+              </button>
+            </Tooltip>
 
             {currentImage && (
               <Tooltip content={t.reset}>
