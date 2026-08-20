@@ -10,10 +10,15 @@ import { API_MODEL_MAP } from "../constants";
 
 import { runWithTokenRetry } from "./tokenRetry";
 
-const MS_BASE_URL = "https://api-inference.modelscope.cn/";
+// Model Scope API base URL. Overridable via VITE_MS_PROXY_URL, which routes
+// requests through the local same-origin proxy (server/proxy-server.mjs) to
+// bypass ModelScope's CORS limits in the browser.
+const MS_DEFAULT_BASE_URL = "https://api-inference.modelscope.cn/";
+const MS_BASE_URL =
+  (import.meta.env.VITE_MS_PROXY_URL || MS_DEFAULT_BASE_URL).replace(/\/$/, "") +
+  "/";
 const MS_GENERATE_ENDPOINT = `${MS_BASE_URL}v1/images/generations`;
-const MS_CHAT_API_URL =
-  "https://api-inference.modelscope.cn/v1/chat/completions";
+const MS_CHAT_API_URL = `${MS_BASE_URL}v1/chat/completions`;
 
 // Constants for image upload via HF Space
 const QWEN_EDIT_HF_BASE = "https://linoyts-qwen-image-edit-2511-fast.hf.space";
@@ -118,7 +123,6 @@ export const generateMSImage = async (
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          "X-ModelScope-Async-Mode": "true",
         },
         body: JSON.stringify(requestBody),
       });
@@ -195,7 +199,6 @@ export const editImageMS = async (
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          "X-ModelScope-Async-Mode": "true",
         },
         body: JSON.stringify(requestBody),
         signal,

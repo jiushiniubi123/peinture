@@ -66,6 +66,8 @@ export const en = {
   apply: "Keep Changes",
   discard: "Discard",
   reset: "Reset",
+  autoRefreshOn: "Auto-generate every {n}s — click to stop",
+  autoRefreshOff: "Auto-generate disabled — click to enable",
   promptHistory: "Prompt History",
   historyEmpty: "No history available",
   sourceCode: "Source Code",

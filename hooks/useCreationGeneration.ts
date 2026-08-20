@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useSettingsStore } from "../store/settingsStore";
 import {
@@ -80,6 +81,8 @@ export const useCreationGeneration = () => {
     guidanceScale,
     setGuidanceScale,
     autoTranslate,
+    autoRefreshEnabled,
+    autoRefreshInterval,
     resetImagineParams,
   } = useSettingsStore();
 
@@ -622,6 +625,25 @@ export const useCreationGeneration = () => {
       setGuidanceScale(defaultGs);
     }
   };
+
+  // --- Auto Refresh (every N seconds re-trigger generation) ---
+  const generateRef = useRef(handleGenerate);
+
+  useEffect(() => {
+    generateRef.current = handleGenerate;
+  });
+
+  useEffect(() => {
+    if (!autoRefreshEnabled) return;
+    const timer = setInterval(() => {
+      const { prompt: currentPrompt, isLoading, isTranslating } =
+        useUIStore.getState();
+      // Skip while idle, translating or already generating.
+      if (!currentPrompt.trim() || isLoading || isTranslating) return;
+      generateRef.current();
+    }, Math.max(10, autoRefreshInterval) * 1000);
+    return () => clearInterval(timer);
+  }, [autoRefreshEnabled, autoRefreshInterval]);
 
   return {
     handleGenerate,
