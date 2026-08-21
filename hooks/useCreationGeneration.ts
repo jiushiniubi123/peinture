@@ -82,7 +82,6 @@ export const useCreationGeneration = () => {
     setGuidanceScale,
     autoTranslate,
     autoRefreshEnabled,
-    autoRefreshInterval,
     resetImagineParams,
   } = useSettingsStore();
 
@@ -626,24 +625,50 @@ export const useCreationGeneration = () => {
     }
   };
 
-  // --- Auto Refresh (every N seconds re-trigger generation) ---
+  // --- Auto Submit (re-trigger generation at a random 120-150s interval) ---
   const generateRef = useRef(handleGenerate);
 
   useEffect(() => {
     generateRef.current = handleGenerate;
   });
 
+  const AUTO_SUBMIT_MIN_MS = 120 * 1000;
+  const AUTO_SUBMIT_MAX_MS = 150 * 1000;
+
+  // Random interval between 120s and 150s (inclusive), in milliseconds
+  const getRandomAutoSubmitMs = () =>
+    AUTO_SUBMIT_MIN_MS +
+    Math.floor(Math.random() * (AUTO_SUBMIT_MAX_MS - AUTO_SUBMIT_MIN_MS + 1));
+
   useEffect(() => {
     if (!autoRefreshEnabled) return;
-    const timer = setInterval(() => {
+
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const runAutoSubmit = async () => {
       const { prompt: currentPrompt, isLoading, isTranslating } =
         useUIStore.getState();
-      // Skip while idle, translating or already generating.
-      if (!currentPrompt.trim() || isLoading || isTranslating) return;
-      generateRef.current();
-    }, Math.max(10, autoRefreshInterval) * 1000);
-    return () => clearInterval(timer);
-  }, [autoRefreshEnabled, autoRefreshInterval]);
+      // Only auto-submit when a prompt exists and we're not already busy.
+      if (currentPrompt.trim() && !isLoading && !isTranslating) {
+        try {
+          await generateRef.current();
+        } catch (err) {
+          console.error("Auto submit failed", err);
+        }
+      }
+      // Reschedule with a fresh random 120-150s delay after the run finishes
+      if (!stopped) {
+        timer = setTimeout(runAutoSubmit, getRandomAutoSubmitMs());
+      }
+    };
+
+    timer = setTimeout(runAutoSubmit, getRandomAutoSubmitMs());
+    return () => {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [autoRefreshEnabled]);
 
   return {
     handleGenerate,

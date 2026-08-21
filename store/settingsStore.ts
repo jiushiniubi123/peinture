@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Language } from "../translations";
 import { ProviderOption, ModelOption, AspectRatioOption } from "../types";
-import { HF_MODEL_OPTIONS } from "../constants";
+import { HF_MODEL_OPTIONS, MS_MODEL_OPTIONS } from "../constants";
 
 export interface SettingsState {
   language: Language;
@@ -38,8 +38,8 @@ export const useSettingsStore = create<SettingsState>()(
         const browserLang = navigator.language.toLowerCase();
         return browserLang.startsWith("zh") ? "zh" : "en";
       })(),
-      provider: "huggingface",
-      model: HF_MODEL_OPTIONS[0].value as ModelOption,
+      provider: "modelscope",
+      model: MS_MODEL_OPTIONS[0].value as ModelOption,
       aspectRatio: "1:1",
       seed: "",
       steps: 9,

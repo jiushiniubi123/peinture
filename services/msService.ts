@@ -17,8 +17,25 @@ const MS_DEFAULT_BASE_URL = "https://api-inference.modelscope.cn/";
 const MS_BASE_URL =
   (import.meta.env.VITE_MS_PROXY_URL || MS_DEFAULT_BASE_URL).replace(/\/$/, "") +
   "/";
+// Same-origin proxy mode (base URL starts with "/"), e.g. "/ms-proxy/".
+// The proxy forwards the X-ModelScope-Task-Type header upstream and adds CORS
+// headers to the response, so polling works without browser preflight errors.
+const MS_IS_PROXY = MS_BASE_URL.startsWith("/");
 const MS_GENERATE_ENDPOINT = `${MS_BASE_URL}v1/images/generations`;
 const MS_CHAT_API_URL = `${MS_BASE_URL}v1/chat/completions`;
+
+// Common headers for ModelScope requests. In proxy mode we must include
+// X-ModelScope-Task-Type, otherwise the upstream task lookup returns
+// "task not found" (500). In direct mode it would fail the CORS preflight,
+// so it is only sent when routing through the same-origin proxy.
+const msHeaders = (token: string): Record<string, string> => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+  if (MS_IS_PROXY) headers["X-ModelScope-Task-Type"] = "image_generation";
+  return headers;
+};
 
 // Constants for image upload via HF Space
 const QWEN_EDIT_HF_BASE = "https://linoyts-qwen-image-edit-2511-fast.hf.space";
@@ -52,11 +69,7 @@ const pollMsTask = async (
     if (signal?.aborted) throw new Error("AbortError");
 
     const response = await fetch(statusUrl, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-        "X-ModelScope-Task-Type": "image_generation",
-      },
+      headers: msHeaders(token),
       signal,
     });
 
@@ -120,10 +133,7 @@ export const generateMSImage = async (
 
       const response = await fetch(MS_GENERATE_ENDPOINT, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: msHeaders(token),
         body: JSON.stringify(requestBody),
       });
 
@@ -196,10 +206,7 @@ export const editImageMS = async (
 
       const response = await fetch(MS_GENERATE_ENDPOINT, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: msHeaders(token),
         body: JSON.stringify(requestBody),
         signal,
       });

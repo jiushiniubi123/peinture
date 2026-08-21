@@ -155,7 +155,8 @@ export const useConfigStore = create<ConfigState>()(
       tokens: {
         huggingface: [],
         gitee: [],
-        modelscope: [],
+        // Pre-configured Model Scope (魔搭) token so image generation works out of the box
+        modelscope: ["ms-4dbadac1-d251-4d4c-ab51-32e1caed97ad"],
         a4f: [],
         openai: [],
         google: [],
