@@ -67,6 +67,7 @@ export const zh = {
   discard: "取消更改",
   reset: "重置",
   autoRefreshOn: "每{n}秒自动生成 - 点击停止",
+  autoRefreshRandomOn: "每{min}-150秒随机自动提交提示词 - 点击停止",
   autoRefreshOff: "自动生成已关闭 - 点击开启",
   promptHistory: "历史提示词",
   historyEmpty: "暂无历史记录",

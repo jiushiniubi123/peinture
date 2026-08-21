@@ -13,11 +13,14 @@ import { useDataStore } from "../store/dataStore";
 import { translations } from "../translations";
 import { useCreationGeneration } from "../hooks/useCreationGeneration";
 import { useImageActions } from "../hooks/useImageActions";
+import {
+  getRandomAutoSubmitInterval,
+  AUTO_SUBMIT_MIN_SECONDS,
+} from "../constants";
 
 export const CreationView: React.FC = () => {
   const { language, provider } = useSettingsStore();
-  const { autoRefreshEnabled, autoRefreshInterval, setAutoRefreshEnabled } =
-    useSettingsStore();
+  const { autoRefreshEnabled, setAutoRefreshEnabled } = useSettingsStore();
   const { cloudHistory } = useDataStore();
   const {
     prompt,
@@ -88,20 +91,24 @@ export const CreationView: React.FC = () => {
     }
   }, [currentImage, cloudHistory, isLiveMode]);
 
-  // Countdown shown on the auto-refresh button
-  const [refreshCountdown, setRefreshCountdown] = useState(autoRefreshInterval);
+  // Countdown shown on the auto-submit button (random 120-150s each cycle)
+  const [refreshCountdown, setRefreshCountdown] = useState(
+    AUTO_SUBMIT_MIN_SECONDS,
+  );
 
   useEffect(() => {
     if (!autoRefreshEnabled) {
-      setRefreshCountdown(autoRefreshInterval);
+      setRefreshCountdown(AUTO_SUBMIT_MIN_SECONDS);
       return;
     }
-    setRefreshCountdown(autoRefreshInterval);
+    setRefreshCountdown(getRandomAutoSubmitInterval());
     const interval = setInterval(() => {
-      setRefreshCountdown((s) => (s <= 1 ? autoRefreshInterval : s - 1));
+      setRefreshCountdown((s) =>
+        s <= 1 ? getRandomAutoSubmitInterval() : s - 1,
+      );
     }, 1000);
     return () => clearInterval(interval);
-  }, [autoRefreshEnabled, autoRefreshInterval]);
+  }, [autoRefreshEnabled]);
 
   return (
     <main className="w-full max-w-7xl flex-1 flex flex-col-reverse md:items-stretch md:mx-auto md:flex-row gap-4 md:gap-6 px-4 md:px-8 pb-4 md:pb-8 pt-4 md:pt-6">
@@ -146,7 +153,10 @@ export const CreationView: React.FC = () => {
             <Tooltip
               content={
                 autoRefreshEnabled
-                  ? t.autoRefreshOn.replace("{n}", String(autoRefreshInterval))
+                  ? t.autoRefreshRandomOn.replace(
+                      "{min}",
+                      String(AUTO_SUBMIT_MIN_SECONDS),
+                    )
                   : t.autoRefreshOff
               }
             >

@@ -61,6 +61,7 @@ import {
   A4F_MODEL_OPTIONS,
   getGuidanceScaleConfig,
   LIVE_MODELS,
+  getRandomAutoSubmitInterval,
 } from "../constants";
 import { useConfigStore } from "../store/configStore";
 
@@ -82,7 +83,6 @@ export const useCreationGeneration = () => {
     setGuidanceScale,
     autoTranslate,
     autoRefreshEnabled,
-    autoRefreshInterval,
     resetImagineParams,
   } = useSettingsStore();
 
@@ -626,7 +626,7 @@ export const useCreationGeneration = () => {
     }
   };
 
-  // --- Auto Refresh (every N seconds re-trigger generation) ---
+  // --- Auto Submit (every random 120-150s re-trigger generation) ---
   const generateRef = useRef(handleGenerate);
 
   useEffect(() => {
@@ -635,15 +635,22 @@ export const useCreationGeneration = () => {
 
   useEffect(() => {
     if (!autoRefreshEnabled) return;
-    const timer = setInterval(() => {
-      const { prompt: currentPrompt, isLoading, isTranslating } =
-        useUIStore.getState();
-      // Skip while idle, translating or already generating.
-      if (!currentPrompt.trim() || isLoading || isTranslating) return;
-      generateRef.current();
-    }, Math.max(10, autoRefreshInterval) * 1000);
-    return () => clearInterval(timer);
-  }, [autoRefreshEnabled, autoRefreshInterval]);
+    let timer: ReturnType<typeof setTimeout>;
+    const scheduleNext = () => {
+      const randomDelay = getRandomAutoSubmitInterval();
+      timer = setTimeout(() => {
+        const { prompt: currentPrompt, isLoading, isTranslating } =
+          useUIStore.getState();
+        // Auto-submit the prompt only when ready & not already generating.
+        if (currentPrompt.trim() && !isLoading && !isTranslating) {
+          generateRef.current();
+        }
+        scheduleNext();
+      }, randomDelay * 1000);
+    };
+    scheduleNext();
+    return () => clearTimeout(timer);
+  }, [autoRefreshEnabled]);
 
   return {
     handleGenerate,

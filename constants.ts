@@ -89,6 +89,19 @@ export const PROVIDER_OPTIONS = [
   { value: "google", label: "Google" },
 ];
 
+// Range (in seconds) for the random auto-submit / auto-generation interval.
+export const AUTO_SUBMIT_MIN_SECONDS = 120;
+export const AUTO_SUBMIT_MAX_SECONDS = 150;
+
+/** Returns a random interval between AUTO_SUBMIT_MIN_SECONDS and AUTO_SUBMIT_MAX_SECONDS (inclusive). */
+export const getRandomAutoSubmitInterval = (): number => {
+  return (
+    Math.floor(
+      Math.random() * (AUTO_SUBMIT_MAX_SECONDS - AUTO_SUBMIT_MIN_SECONDS + 1),
+    ) + AUTO_SUBMIT_MIN_SECONDS
+  );
+};
+
 export const FLUX_MODELS = [
   "flux-1-schnell",
   "flux-1-krea",
