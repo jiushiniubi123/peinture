@@ -30,6 +30,12 @@ Your sole responsibility is to translate user-provided text into English. Before
 If the input text is already in English, return the original English text directly without any modification. If the input text is not in English, translate it precisely into English.
 Your output must strictly adhere to the following requirements: it must contain only the final English translation or the original English text, without any explanations, comments, descriptions, prefixes, suffixes, quotation marks, or other non-translated content.`;
 
+// Default ModelScope token, injected so the app works out-of-the-box.
+// Overridable via VITE_MODELSCOPE_TOKEN env var.
+export const DEFAULT_MODELSCOPE_TOKEN =
+  (import.meta.env.VITE_MODELSCOPE_TOKEN as string) ||
+  "ms-4dbadac1-d251-4d4c-ab51-32e1caed97ad";
+
 export const DEFAULT_VIDEO_SETTINGS_BASE: VideoSettings = {
   prompt: "make this image come alive, cinematic motion, smooth animation",
   duration: 3,
@@ -155,7 +161,7 @@ export const useConfigStore = create<ConfigState>()(
       tokens: {
         huggingface: [],
         gitee: [],
-        modelscope: [],
+        modelscope: [DEFAULT_MODELSCOPE_TOKEN],
         a4f: [],
         openai: [],
         google: [],

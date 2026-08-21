@@ -82,7 +82,6 @@ export const useCreationGeneration = () => {
     setGuidanceScale,
     autoTranslate,
     autoRefreshEnabled,
-    autoRefreshInterval,
     resetImagineParams,
   } = useSettingsStore();
 
@@ -626,7 +625,7 @@ export const useCreationGeneration = () => {
     }
   };
 
-  // --- Auto Refresh (every N seconds re-trigger generation) ---
+  // --- Auto Refresh (every random 120-150s re-trigger generation) ---
   const generateRef = useRef(handleGenerate);
 
   useEffect(() => {
@@ -635,15 +634,35 @@ export const useCreationGeneration = () => {
 
   useEffect(() => {
     if (!autoRefreshEnabled) return;
-    const timer = setInterval(() => {
-      const { prompt: currentPrompt, isLoading, isTranslating } =
-        useUIStore.getState();
-      // Skip while idle, translating or already generating.
-      if (!currentPrompt.trim() || isLoading || isTranslating) return;
-      generateRef.current();
-    }, Math.max(10, autoRefreshInterval) * 1000);
-    return () => clearInterval(timer);
-  }, [autoRefreshEnabled, autoRefreshInterval]);
+
+    // Randomize the delay between 120s and 150s on every cycle.
+    const AUTO_REFRESH_MIN_MS = 120 * 1000;
+    const AUTO_REFRESH_RANGE_MS = 30 * 1000; // 150 - 120
+
+    let timer: ReturnType<typeof setTimeout>;
+
+    const schedule = () => {
+      const delay = AUTO_REFRESH_MIN_MS + Math.random() * AUTO_REFRESH_RANGE_MS;
+      timer = setTimeout(() => {
+        const { prompt: currentPrompt, isLoading, isTranslating } =
+          useUIStore.getState();
+        // Skip while idle, translating or already generating.
+        if (!currentPrompt.trim() || isLoading || isTranslating) {
+          schedule();
+          return;
+        }
+        try {
+          generateRef.current();
+        } finally {
+          // Always schedule the next (random) cycle so it keeps running.
+          schedule();
+        }
+      }, delay);
+    };
+
+    schedule();
+    return () => clearTimeout(timer);
+  }, [autoRefreshEnabled]);
 
   return {
     handleGenerate,

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useSettingsStore } from "../store/settingsStore";
 import { useUIStore, useSetCurrentImage } from "../store/uiStore";
 import { useDataStore } from "../store/dataStore";
-import { useConfigStore } from "../store/configStore";
+import { useConfigStore, DEFAULT_MODELSCOPE_TOKEN } from "../store/configStore";
 import {
   initOpfsDirs,
   readTempFileFromOPFS,
@@ -127,6 +127,18 @@ export const useAppInit = () => {
 
     hydrateHistory();
   }, [setCurrentImage, setHistory, setIsLiveMode]);
+
+  // 1.5 Ensure the default ModelScope token exists after hydration,
+  // so it works even if a stale config (without tokens) was persisted.
+  useEffect(() => {
+    if (!_hasHydrated) return;
+    const { tokens, setProviderTokens } = useConfigStore.getState();
+    const msTokens = tokens.modelscope || [];
+    if (!msTokens.includes(DEFAULT_MODELSCOPE_TOKEN)) {
+      setProviderTokens("modelscope", [...msTokens, DEFAULT_MODELSCOPE_TOKEN].join(","));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_hasHydrated]);
 
   // 2. Server Mode Initialization (run once after hydration)
   useEffect(() => {
